@@ -139,7 +139,20 @@ CAMLextern char * caml_strconcat(int n, ...); /* n args of const char * type */
 #define CAML_SYS_RENAME(old_name,new_name) rename(old_name, new_name)
 #define CAML_SYS_CHDIR(dirname) chdir(dirname)
 #define CAML_SYS_GETENV(varname) getenv(varname)
-#define CAML_SYS_SYSTEM(command) system(command)
+/* #define CAML_SYS_SYSTEM(command) system(command) */
+#if __APPLE__
+  #include "TargetConditionals.h"
+  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+    // system() is not supported on iOS
+    #define CAML_SYS_SYSTEM(command) (-1)
+  #else
+    // macOS is OK
+    #define CAML_SYS_SYSTEM(command) system_os(command)
+  #endif
+#else // Other operating systems (Android?)
+  #define CAML_SYS_SYSTEM(command) system_os(command)
+#endif
+
 #define CAML_SYS_READ_DIRECTORY(dirname,tbl) caml_read_directory(dirname,tbl)
 
 #else
